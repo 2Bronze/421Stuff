@@ -16,6 +16,9 @@ impl CLI {
         println!("COMMANDS:");
         println!("Insert: 'I <Integer>'");
         println!("Delete: 'D <Integer>'");
+        println!("Height of Tree: HT");
+        println!("Count of Nodes: CN");
+        println!("Count of Leaves: CL");
         println!("Clear: 'C'");
         println!("Traverse: 'T'");
         println!("Print Tree: 'P'");
@@ -49,6 +52,12 @@ impl CLI {
                 } else {
                     println!("Invalid Number of Arguments.");
                 }
+            } else if command == "HT" {
+                self.height();
+            } else if command == "CN" {
+                self.count();
+            } else if command == "CL" {
+                self.count_leaves();
             } else if command == "C" { //Clear
                 self.clear();
             } else if command == "T" { //Traverse
@@ -121,6 +130,21 @@ impl CLI {
         println!("Clearing Tree...");
         tree.clear();
         println!("Finished");
+    }
+
+    fn height(&self) {
+        let tree = &self.tree;
+        println!("Height: {}", tree.get_height());
+    }
+
+    fn count(&self) {
+        let tree = &self.tree;
+        println!("Count: {}", tree.get_count());
+    }
+
+    fn count_leaves(&self) {
+        let tree = &self.tree;
+        println!("Leaf Count: {}", tree.get_leaf_count());
     }
 
     fn inorder_traversal(&mut self) {

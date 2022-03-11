@@ -54,6 +54,7 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
                     Rotation::LeftRight(rc_node) => {
                         let rc_parent = rc_node.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         RBTree::rotate_left(rc_parent.clone());
+                        let rc_parent = rc_parent.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         let rc_grandparent = rc_parent.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         RBTree::rotate_right(rc_grandparent.clone());
                         let parent = rc_parent.as_ref().borrow();
@@ -64,11 +65,9 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
                     Rotation::RightLeft(rc_node) => {
                         let rc_parent = rc_node.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         RBTree::rotate_right(rc_parent.clone());
-                        self.print();
                         let rc_parent = rc_parent.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         let rc_grandparent = rc_parent.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         RBTree::rotate_left(rc_grandparent.clone());
-                        self.print();
                         let parent = rc_parent.as_ref().borrow();
                         let grandparent = rc_grandparent.as_ref().borrow();
                         parent.color.swap(&grandparent.color);
@@ -88,6 +87,7 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
                 self.count += 1;
             },
             None => {
+                //Insert new root if root does not exist
                 self.root = Some(Rc::new(RefCell::new(TreeNode{color: Cell::new(NodeColor::Black), key: key, parent: None, left: None, right: None})));
                 self.count = 1;
             },
@@ -703,6 +703,13 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
         self.count
     }
 
+    pub fn get_leaf_count(&self) -> usize {
+        match &self.root {
+            Some(rc_node) => RBTree::leaf_count(rc_node.clone()),
+            None => 0
+        }
+    }
+
     pub fn get_height(&self) -> usize {
         self.height
     }
@@ -727,6 +734,24 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
             return left_height;
         } else {
             return right_height;
+        }
+    }
+
+    fn leaf_count(rc_node: Tree<T>) -> usize {
+        let node = rc_node.as_ref().borrow();
+        let mut value = 0;
+        if node.left.is_none() && node.right.is_none() {
+            return 1;
+        } else {
+            match &node.left {
+                Some(rc_node) => value += RBTree::leaf_count(rc_node.clone()),
+                None => {},
+            }
+            match &node.right {
+                Some(rc_node) => value += RBTree::leaf_count(rc_node.clone()),
+                None => {},
+            }
+            return value;
         }
     }
 
