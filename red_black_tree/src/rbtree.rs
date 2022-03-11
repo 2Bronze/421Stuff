@@ -41,6 +41,7 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
         match &self.root {
             Some(rc_node) => {
                 let mut new_rc_node = RBTree::node_insert(rc_node.clone(), key);
+                //Perform rotations
                 match RBTree::recolor(new_rc_node.clone()) {
                     Rotation::LeftLeft(rc_node) => {
                         let rc_parent = rc_node.as_ref().borrow().parent.as_ref().cloned().unwrap();
@@ -54,6 +55,7 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
                     Rotation::LeftRight(rc_node) => {
                         let rc_parent = rc_node.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         RBTree::rotate_left(rc_parent.clone());
+                        //After rotation rc_parent is now lower, we just get it's parent parent to get the original grandparent
                         let rc_parent = rc_parent.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         let rc_grandparent = rc_parent.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         RBTree::rotate_right(rc_grandparent.clone());
@@ -65,6 +67,7 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
                     Rotation::RightLeft(rc_node) => {
                         let rc_parent = rc_node.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         RBTree::rotate_right(rc_parent.clone());
+                        //After rotation rc_parent is now lower, we just get it's parent parent to get the original grandparent
                         let rc_parent = rc_parent.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         let rc_grandparent = rc_parent.as_ref().borrow().parent.as_ref().cloned().unwrap();
                         RBTree::rotate_left(rc_grandparent.clone());
@@ -260,9 +263,14 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
             },
             None => {},
         }
-        self.height = RBTree::tree_height(self.root.as_ref().cloned().unwrap().clone());
+        if self.root.is_none() {
+            self.height = 0;
+        } else {
+            self.height = RBTree::tree_height(self.root.as_ref().cloned().unwrap().clone());
+        }
     }
 
+    //Currently BST delete only
     fn node_delete(rc_node: Tree<T>, key: T) -> Option<Tree<T>> {
         // let rc_replacement_node = RBTree::find_replacement(rc_node.clone());
         // let mut node = rc_node.as_ref().borrow_mut();
@@ -625,6 +633,7 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
         right_node.left.replace(rc_node.clone());
     }
 
+    //Ensure the root of the tree is correct after any rotations
     fn fix_root(tree: &mut Self) {
         let mut parent = tree.root.as_ref().unwrap().as_ref().borrow().parent.as_ref().cloned();
         while let Some(ref rc_node) = parent {
@@ -757,12 +766,12 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
 
     pub fn print(&self) {
         match &self.root {
-            Some(rc_node) => RBTree::node_print(rc_node.clone(), String::from(""), String::from("")),
+            Some(rc_node) => RBTree::node_print(rc_node.clone(), String::from("")),
             None => {},
         }
     }
 
-    fn node_print(rc_node: Tree<T>, mut prefix: String, mut children_prefix: String) {
+    fn node_print(rc_node: Tree<T>, mut children_prefix: String) {
         let node = rc_node.as_ref().borrow();
         let left;
         let right;
@@ -784,17 +793,16 @@ impl<T: std::cmp::PartialOrd + Copy + std::fmt::Display + std::fmt::Debug> RBTre
         } else {
             parent = Some(node.parent.as_ref().cloned().unwrap().as_ref().borrow().key);
         }
-        println!("{}{}{} Color:{:?} Parent:{:?} Left:{:?} Right:{:?}", children_prefix, prefix, node.key, node.color, parent, left, right);
+        println!("{}{} Color:{:?} Parent:{:?} Left:{:?} Right:{:?}", children_prefix, node.key, node.color, parent, left, right);
         children_prefix.push_str("| - ");
         match &node.left {
             Some(rc_node) => {
-                // prefix.push_str(" - ");
-                RBTree::node_print(rc_node.clone(), prefix.clone(), children_prefix.clone());
+                RBTree::node_print(rc_node.clone(), children_prefix.clone());
             },
             None => {},
         };
         match &node.right {
-            Some(rc_node) => RBTree::node_print(rc_node.clone(), prefix.clone(), children_prefix.clone()),
+            Some(rc_node) => RBTree::node_print(rc_node.clone(), children_prefix.clone()),
             None => {},
         };
     }

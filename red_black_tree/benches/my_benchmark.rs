@@ -31,7 +31,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         });
         benches.bench_with_input(BenchmarkId::new("Search", search_array[i]), &num,
         |b,&i| {
-            b.iter(|| search_bench(tree, i))
+            b.iter(|| search_bench(tree, i/10))
         });
     }
     benches.finish();
