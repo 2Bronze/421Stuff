@@ -63,7 +63,10 @@ impl GameBoardComponent{
         }
         // Horizontal Win Check
         incr = 0;
-        for i in 0..7 {
+        if board[row][0] != 0 {
+            incr += 1;
+        }
+        for i in 1..7 {
             if board[row][i] != 0 && board[row][i] == board[row][i-1] {
                 incr += 1;
             }
@@ -75,7 +78,40 @@ impl GameBoardComponent{
                 return Gamestate::Gameover;
             }
         }
-        // NEED TO ADD A DIAGONAL CHECK, NOT SURE HOW THATS GOING TO WORK 
+        // Diagonal Check 
+        incr = 0;
+        // Get to top row or leftmost column 
+        let mut temp_row = row;
+        let mut temp_col = column;
+        loop {
+            if temp_row == 5 || temp_col == 0 {
+                break;
+            }  
+            temp_row += 1;
+            temp_col -= 1;
+        }
+        if  board[temp_row][temp_col] != 0 {
+            incr += 1;
+        }
+        // Now do checking
+        loop {
+            if temp_row == 0 || temp_col == 6 {
+                break;
+            }
+            if board[temp_row - 1][temp_col + 1] != 0 && board[temp_row - 1][temp_col + 1] == board[temp_row][temp_col] {
+                incr += 1;
+            }
+            else {
+                incr = 0;
+            }
+            if incr == 4 {
+                println!("Player {} wins", num);
+                return Gamestate::Gameover;
+            }
+            temp_row -= 1;
+            temp_col += 1;
+
+        }
         println!("No winner");
         return Gamestate::InProgress;
     }       
