@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import * as wasm from "rust-api";
 
 @Component({
   selector: 'app-game',
