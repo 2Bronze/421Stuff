@@ -1,0 +1,10 @@
+/home/braden/dev/rust-projects/421Stuff/ECE421_Project_3/yew-connect4/target/wasm32-unknown-unknown/debug/deps/gloo_storage-ffac23ba20174d6e.rmeta: /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/lib.rs /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/errors.rs /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/local_storage.rs /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/session_storage.rs
+
+/home/braden/dev/rust-projects/421Stuff/ECE421_Project_3/yew-connect4/target/wasm32-unknown-unknown/debug/deps/libgloo_storage-ffac23ba20174d6e.rlib: /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/lib.rs /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/errors.rs /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/local_storage.rs /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/session_storage.rs
+
+/home/braden/dev/rust-projects/421Stuff/ECE421_Project_3/yew-connect4/target/wasm32-unknown-unknown/debug/deps/gloo_storage-ffac23ba20174d6e.d: /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/lib.rs /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/errors.rs /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/local_storage.rs /home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/session_storage.rs
+
+/home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/lib.rs:
+/home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/errors.rs:
+/home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/local_storage.rs:
+/home/braden/.cargo/registry/src/github.com-1ecc6299db9ec823/gloo-storage-0.2.0/src/session_storage.rs:
