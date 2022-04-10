@@ -43,16 +43,16 @@ fn user_to_document(user: &User) -> Document {
     let User {
         username,
         password,
+        wins,
+        losses,
         ..
     } = user;
     doc! {
         "username": username,
         "password": password,
-        "wins": 0,
-        "losses": 0,
+        "wins": wins,
+        "losses": losses,
     }
-    // let serialized_user = bson::to_bson(&user).unwrap();
-    // serialized_user.as_document().unwrap().to_owned()
 }
 
 // Transform data to mongo db document
@@ -82,25 +82,6 @@ impl ApiService {
         self.users.insert_one(user_to_document(_user), None)
     }
 
-    pub fn signup(&self, _user: &User) -> Result<InsertOneResult, Error> {
-        let document = self.users.find_one(doc! {
-            "username": _user.username.to_owned(),
-        }, None).ok().expect("Failed to execute find!");
-
-        self.users.insert_one(user_to_document(_user), None)
-    }
-
-    pub fn signin(&self, _user: &User) -> Result<bool, Error> {
-        let document = self.users.find_one(doc! {
-            "username": _user.username.to_owned(),
-        }, None).ok().expect("Failed to execute find!");
-
-        if document.unwrap().get("password").unwrap().as_str().unwrap() == _user.password {
-            return Ok(true);
-        }
-        Ok(false)
-    }
-
     pub fn create_match(&self, _match: &Match) -> Result<InsertOneResult, Error> {
         self.match_history.insert_one(match_to_document(_match), None)
     }
@@ -121,6 +102,10 @@ impl ApiService {
         }, None).ok().expect("Failed to execute find!");
         let docs: Vec<_> = cursor.map(|doc| doc.unwrap()).collect();
         Ok(docs)
+    }
+
+    pub fn update_user(&self, _user: &User, _username: &String) -> Result<UpdateResult, Error> {
+        self.users.update_one(doc! {"username": _username}, user_to_document(_user), None)
     }
 
     // Update an existing document

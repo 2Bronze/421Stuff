@@ -107,6 +107,19 @@ async fn get_matches(app_data: web::Data<crate::AppState>, username: web::Path<S
         }
     }
 }
+
+#[post("/update-user/{username}")]
+async fn update_user(app_data: web::Data<crate::AppState>, user: web::Json<User>, username: web::Path<String>) -> impl Responder {
+    let action = app_data.service_manager.api.update_user(&user, &username);
+    let result = web::block(move || action).await;
+    match result {
+            Ok(result) => HttpResponse::Ok().json(result.modified_count),
+            Err(e) => {
+                println!("Error while getting, {:?}", e);
+                HttpResponse::InternalServerError().finish()
+            }
+        }
+}
 // #[post("/update/{param}")]
 // async fn update_user(app_data: web::Data<crate::AppState>, data: web::Json<Data>, param: web::Path<String>) -> impl Responder {
 //     let action = app_data.service_manager.api.update(&data, &param);
@@ -140,6 +153,7 @@ pub fn init(cfg: &mut web::ServiceConfig) {
     cfg.service(signin);
     cfg.service(add_match);
     cfg.service(get_matches);
+    cfg.service(update_user);
     // cfg.service(delete_user);
     // cfg.service(get_all_json);
 }
