@@ -2,8 +2,8 @@ use mongodb::{bson::doc, options::ClientOptions, Client};
 use futures::stream::{StreamExt, TryStreamExt};
 use bson;
 use chrono::Utc;
-use crate::User;
-use crate::Match;
+use crate::user::User;
+use crate::r#match::Match;
 
 pub async fn test_connection() -> mongodb::error::Result<()> {
     // Parse your connection string into an options struct
