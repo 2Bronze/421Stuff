@@ -1,0 +1,25 @@
+.player-card {
+  border: 1px solid black;
+  border-radius: 15px;
+  padding: 10px;
+}
+
+.player-card-content {
+  border: 1px dashed black;
+  border-radius: 15px;
+  padding: 10px;
+  font-family: monospace;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.player-info {
+  padding: 0px 30px;
+}
+
+.player-name {
+  font-size: 15pt;
+  font-weight: bolder;
+}

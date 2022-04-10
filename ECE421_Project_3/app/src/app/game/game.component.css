@@ -1,0 +1,10 @@
+table {
+  width: 100%;
+  padding: 20px;
+}
+
+tr, td {
+  border: 1px solid;
+  padding: 10px;
+  text-align: center;
+}
