@@ -108,6 +108,26 @@ impl ApiService {
         self.users.update_one(doc! {"username": _username}, user_to_document(_user), None)
     }
 
+    pub fn delete_user(&self, _user: &User) -> Result<DeleteResult, Error> {
+        self.users.delete_one(doc! { "username": _user.username.to_owned() }, None)
+    }
+
+    pub fn get_all_matches(&self) -> Result<Vec<bson::ordered::OrderedDocument>, mongodb::error::Error> {
+        let cursor = self.match_history.find(doc! {}, None).ok().expect("Failed to execute find!");
+        let docs: Vec<_> = cursor.map(|doc| doc.unwrap()).collect();
+        Ok(docs)
+    }
+
+    pub fn update_match(&self, _match_data: &Match, _id: &String) -> Result<UpdateResult, Error>{
+        let match_id = bson::oid::ObjectId::with_string(_id).unwrap();
+        self.match_history.update_one(doc! {"_id": match_id}, match_to_document(_match_data), None)
+    }
+
+    pub fn delete_match(&self, _id: &String) -> Result<DeleteResult, Error> {
+        let match_id = bson::oid::ObjectId::with_string(_id).unwrap();
+        self.match_history.delete_one(doc! {"_id": match_id}, None)
+    }
+
     // Update an existing document
     // pub fn update(&self, _data:&Data, _param: &String) -> Result<UpdateResult, Error> {
     //     let object_param = bson::oid::ObjectId::with_string(_param).unwrap();

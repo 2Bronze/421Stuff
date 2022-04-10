@@ -108,6 +108,19 @@ async fn get_matches(app_data: web::Data<crate::AppState>, username: web::Path<S
     }
 }
 
+#[get("/get-all-matches")]
+async fn get_all_matches(app_data: web::Data<crate::AppState>) -> impl Responder {
+    let action = app_data.service_manager.api.get_all_matches();
+    let result = web::block(move || action).await;
+    match result {
+        Ok(result) => HttpResponse::Ok().json(result),
+        Err(e) => {
+            println!("Error while getting, {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
 #[post("/update-user/{username}")]
 async fn update_user(app_data: web::Data<crate::AppState>, user: web::Json<User>, username: web::Path<String>) -> impl Responder {
     let action = app_data.service_manager.api.update_user(&user, &username);
@@ -119,6 +132,66 @@ async fn update_user(app_data: web::Data<crate::AppState>, user: web::Json<User>
                 HttpResponse::InternalServerError().finish()
             }
         }
+}
+
+#[delete("/delete-user")]
+async fn delete_user(app_data: web::Data<crate::AppState>, user: web::Json<User>) -> impl Responder {
+    let action = app_data.service_manager.api.get_user(&user.username);
+    let result = web::block(move || action).await;
+    match result {
+        Ok(option) => {
+            match option {
+                Some(document) => {
+                    if document.get("password").unwrap().as_str().unwrap() == user.password {
+                        //Is correct
+                    } else {
+                        return HttpResponse::Unauthorized().finish();
+                    }
+                },
+                None => return HttpResponse::Unauthorized().finish(),
+            }
+        },
+        Err(e) => {
+            println!("Error while getting, {:?}", e);
+            return HttpResponse::InternalServerError().finish();
+        }
+    }
+
+    let action = app_data.service_manager.api.delete_user(&user);
+    let result = web::block(move || action).await;
+    match result {
+        Ok(res) => HttpResponse::Ok().json(res.deleted_count),
+        Err(e) => {
+            println!("Error while getting, {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        },
+    }
+}
+
+#[post("/update-match/{_id}")]
+async fn update_match(app_data: web::Data<crate::AppState>, match_data: web::Json<Match>, _id: web::Path<String>) -> impl Responder {
+    let action = app_data.service_manager.api.update_match(&match_data, &_id);
+    let result = web::block(move || action).await;
+    match result {
+        Ok(res) => HttpResponse::Ok().json(res.modified_count),
+        Err(e) => {
+            println!("Error while getting, {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
+#[delete("/delete-match/{_id}")]
+async fn delete_match(app_data: web::Data<crate::AppState>, _id: web::Path<String>) -> impl Responder{
+    let action = app_data.service_manager.api.delete_match(&_id);
+    let result = web::block(move || action).await;
+    match result {
+        Ok(res) => HttpResponse::Ok().json(res.deleted_count),
+        Err(e) => {
+            println!("Error while getting, {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
 }
 // #[post("/update/{param}")]
 // async fn update_user(app_data: web::Data<crate::AppState>, data: web::Json<Data>, param: web::Path<String>) -> impl Responder {
@@ -148,12 +221,15 @@ async fn update_user(app_data: web::Data<crate::AppState>, user: web::Json<User>
 
 // function that will be called on new Application to configure routes for this module
 pub fn init(cfg: &mut web::ServiceConfig) {
-    cfg.service(get_user);
     cfg.service(signup);
     cfg.service(signin);
+    cfg.service(get_user);
+    cfg.service(update_user);
+    cfg.service(delete_user);
     cfg.service(add_match);
     cfg.service(get_matches);
-    cfg.service(update_user);
-    // cfg.service(delete_user);
+    cfg.service(get_all_matches);
+    cfg.service(update_match);
+    cfg.service(delete_match);
     // cfg.service(get_all_json);
 }
