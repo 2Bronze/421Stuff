@@ -147,6 +147,7 @@ impl GameBoardComponent{
                 }
             }
             // Diagonal Check
+            incr = 0;
             let mut temp_row = row;
             let mut temp_col = column;
         
@@ -199,6 +200,59 @@ impl GameBoardComponent{
                 }
 
             }
+
+            // Other Diagonal Check
+            incr = 0;
+            let mut temp_row2 = row;
+            let mut temp_col2 = column;
+        
+            loop {
+                if temp_row2 == 3 || temp_col2 == 5 {
+                    break;
+                }  
+                temp_row2 += 1;
+                temp_col2 += 1;
+            }
+            // Now do checking
+            loop {
+                if temp_row2 < 1 || temp_col2 < 2 {
+                    break;
+                }
+                if (board[temp_row2][temp_col2] != 0 && board[temp_row2 - 1][temp_col2 - 1] != 0) && (board[temp_row2 - 1][temp_col2 - 1] != board[temp_row2][temp_col2]) {
+                    if incr == 1 {
+                        if board[temp_row2][temp_col2] == board[temp_row2 + 1][temp_col2 + 1] {
+                            incr += 1;
+                        }
+                        else {
+                            incr = 0;
+                            temp_row2 -= 1;
+                            temp_col2 -= 1;
+                        }
+                    }
+                    else {
+                        incr += 1;
+                        temp_row2 -= 2;
+                        temp_col2 -= 2;
+                    }
+                }
+                else {
+                    incr = 0;
+                    temp_row2 -= 1;
+                    temp_col2 -= 1;
+                }
+                if incr == 2 {
+                    let mut winner = "0";
+                    if (board[temp_row2][temp_col2] == 2) {
+                        winner = "T";
+                    }
+                    else {
+                        winner = "O";
+                    }
+                    println!("Player {} wins", winner);
+                    return Gamestate::Gameover;
+                }
+
+            }
             println!("No winner");
             return Gamestate::InProgress;
         }     
@@ -213,7 +267,7 @@ impl GameBoardComponent{
         }
         // Vertical win check 
         let mut incr = 0;
-        for i in 1..5 {
+        for i in 1..6 {
             if board[i][column] != 0 && board[i][column] == board[i-1][column] {
                 incr += 1;
             }
@@ -228,9 +282,9 @@ impl GameBoardComponent{
         }
         // Horizontal Win Check
         incr = 0;
-        if board[row][0] != 0 {
-            incr += 1;
-        }
+        // if board[row][0] != 0 {
+        //     incr += 1;
+        // }
         for i in 1..7 {
             if board[row][i] != 0 && board[row][i] == board[row][i-1] {
                 incr += 1;
@@ -245,7 +299,7 @@ impl GameBoardComponent{
         }
         // Diagonal Check 
         incr = 0;
-        // Get to top row or leftmost column 
+        // Get to bottom row or leftmost column 
         let mut temp_row = row;
         let mut temp_col = column;
         loop {
@@ -275,6 +329,40 @@ impl GameBoardComponent{
             }
             temp_row -= 1;
             temp_col += 1;
+
+        }
+        // Other diagonal Check
+        incr = 0;
+        // Get to bottom row or rightmost column 
+        let mut temp_row2 = row;
+        let mut temp_col2 = column;
+        loop {
+            if temp_row2 == 5 || temp_col2 == 6 {
+                break;
+            }  
+            temp_row2 += 1;
+            temp_col2 += 1;
+        }
+        if  board[temp_row2][temp_col2] != 0 {
+            incr += 1;
+        }
+        // Now do checking
+        loop {
+            if temp_row2 == 0 || temp_col2 == 0 {
+                break;
+            }
+            if board[temp_row2 - 1][temp_col2 - 1] != 0 && board[temp_row2 - 1][temp_col2 - 1] == board[temp_row2][temp_col2] {
+                incr += 1;
+            }
+            else {
+                incr = 0;
+            }
+            if incr == 4 {
+                println!("Player {} wins", num);
+                return Gamestate::Gameover;
+            }
+            temp_row2 -= 1;
+            temp_col2 -= 1;
 
         }
         println!("No winner");
