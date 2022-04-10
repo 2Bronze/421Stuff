@@ -6,7 +6,7 @@ use wasm_request::{get_options, request, Method, DataType};
 
 use std::collections::HashMap;
 use std::error::Error;
-use reqwest::prelude::*;
+use reqwest;
 use http::StatusCode;
 
 
@@ -80,17 +80,6 @@ impl GameBoardComponent{
     //Send a POST req to the database saving the game
     pub fn save_game_details(){
         
-    }
-
-    pub async fn post_new_user(user: User){
-        let options = get_options::<User>(
-            "https://localhost:4000",
-            Method::POST,
-            None,
-            Some(DataType::Json(user)),
-            );
-            let resp = request(options).await.unwrap().into_serde::<SignInResponse>().unwrap();
-            resp;
     }
 
     // Check who wins toot otto
@@ -312,8 +301,23 @@ impl GameBoardComponent{
         }
         println!("No winner");
         return Gamestate::InProgress;
-    }       
+    }    
+    
+    async fn login_user(&mut self , user: HashMap<&str, String>){
+        let client = reqwest::Client::new();
+        let res = client.post("http://httpbin.org/post")
+        .json(&user)
+        .send()
+        .await;
+        if res.unwrap().status().as_str() == "200"{
+            self.is_authenticated = true;
+        }
+                
+            
+        }
+    
 }
+
 
 
 impl Component for GameBoardComponent{
@@ -340,32 +344,13 @@ impl Component for GameBoardComponent{
         match msg{
             Msg::SignIn =>{
                 let mut map = HashMap::new();
-                map.insert("username", self.username);
-                map.insert("password", self.password);
-
-                let client = reqwest::blocking::Client::new();
-                let res = client.post("http://localhost/4000")
-                    .json(&map)
-                    .send();
-                if res.unwrap().status() == StatusCode::OK{
-                    self.is_authenticated = true;
-                }
+                map.insert("username", self.username.clone());
+                map.insert("password", self.password.clone());
+                self.login_user(map);
                 return true;
             },
             Msg::SignUp =>{
-                let mut map: HashMap<&str,()>= HashMap::new();
-                map.insert("username", self.username);
-                map.insert("password", self.password);
-                map.insert("wins", 0);
-                map.insert("losses", 0);
 
-                let client = reqwest::blocking::Client::new();
-                let res = client.post("http://localhost/4000")
-                    .json(&map)
-                    .send();
-                if res.unwrap().status() == StatusCode::OK{
-                    self.is_authenticated = true;
-                }
                 return true;
             },
             Msg::UsernameInput(uname) =>{
@@ -1404,6 +1389,18 @@ impl Component for GameBoardComponent{
                     <TextInput on_change ={link.callback(Msg::PasswordInput)} value={self.password.clone()} />
                     <button onclick = {link.callback(|_| Msg::SignUp)}>{"Sign Up"}</button>
                     <button onclick = {link.callback(|_| Msg::SignIn)}>{"Sign In"}</button>
+                </div>
+                <div class = "login-status">
+                    {if self.is_authenticated{
+                        html!{<div>
+                                <p>{"Logged in as: "}</p>
+                                <p>{self.username.clone()}</p>
+                            </div>}
+                    }
+                    else{
+                        html!{<p>{"Not logged in"}</p>}
+                    }
+                    }
                 </div>
             </div>
         }
