@@ -1,5 +1,14 @@
 use yew::prelude::*;
 use yew::html::Scope;
+mod text_input;
+use text_input::TextInput;
+use wasm_request::{get_options, request, Method, DataType};
+
+use std::collections::HashMap;
+use std::error::Error;
+use reqwest::prelude::*;
+use http::StatusCode;
+
 
 
 // Enumeration for keeping track of gamestate
@@ -45,6 +54,10 @@ enum Msg{
     TootOtto,
     NormalView,
     CBView,
+    SignUp,
+    SignIn,
+    UsernameInput(String),
+    PasswordInput(String),
 }
 
 struct GameBoardComponent{
@@ -56,152 +69,172 @@ struct GameBoardComponent{
     pub curr_player: Player,
     pub viewmode: ViewMode,
     pub gamename: GameName,
+    pub username: String,
+    pub password: String,
+    pub is_authenticated: bool,
+
 }
 
 impl GameBoardComponent{
 
-        // Check who wins toot otto
-        pub fn check_toototto_winner(column: usize, row: usize, player: &Player, board: [[u8; 6]; 4]) -> Gamestate{
-            // let mut num = 1;
-            // Vertical win check 
-            let mut incr = 0;
-            let mut i = 0;
-            loop {
-                if i > 2 {
-                    break;
-                }
-                if (board[i][column] != 0 && board[i+1][column] !=0) && (board[i][column] != board[i+1][column]) {
-                    if incr == 1 {
-                        if board[i][column] == board[i-1][column] {
-                            incr += 1;
-                            i+=2;
-                        }
-                        else {
-                            incr = 0;
-                            i+=1;
-                        }
-                    }
-                    else {
-                        incr += 1;
-                        i+=2;
-                    }
-                    
-                }
-                else {
-                    incr = 0;
-                    i += 1;
-                }
-                if incr == 2 {
-                    i -= 2;
-                    let mut winner = "0";
-                    if (board[i][column] == 2) {
-                        winner = "T";
-                    }
-                    else {
-                        winner = "O";
-                    }
-                    println!("Player {} wins", winner);
-                    return Gamestate::Gameover;
-                    
-                }
-            }
-            // Horizontal Win Check
-            incr = 0;
-            i = 0;
-            loop {
-                if i > 4 {
-                    break;
-                }
-                if (board[row][i] != 0 && board[row][i+1] != 0) && (board[row][i] != board[row][i+1]) {
-                    if incr == 1 {
-                        if board[row][i] == board[row][i-1] {
-                            incr += 1;
-                            i+=2;
-                        }
-                        else {
-                            incr = 0;
-                            i+=1;
-                        }
-                    }
-                    else {
-                        incr += 1;
-                        i+=2;
-                    }
-                }
-                else {
-                    incr = 0;
-                    i+=1;
-                }
-                if incr == 2 {
-                    i -= 2;
-                    let mut winner = "0";
-                    if (board[row][i] == 2) {
-                        winner = "T";
-                    }
-                    else {
-                        winner = "O";
-                    }
-                    println!("Player {} wins", winner);
-                    return Gamestate::Gameover;
-
-                }
-            }
-            // Diagonal Check
-            let mut temp_row = row;
-            let mut temp_col = column;
+    //Send a POST req to the database saving the game
+    pub fn save_game_details(){
         
-            loop {
-                if temp_row == 3 || temp_col == 0 {
-                    break;
-                }  
-                temp_row += 1;
-                temp_col -= 1;
+    }
+
+    pub async fn post_new_user(user: User){
+        let options = get_options::<User>(
+            "https://localhost:4000",
+            Method::POST,
+            None,
+            Some(DataType::Json(user)),
+            );
+            let resp = request(options).await.unwrap().into_serde::<SignInResponse>().unwrap();
+            resp;
+    }
+
+    // Check who wins toot otto
+    pub fn check_toototto_winner(column: usize, row: usize, player: &Player, board: [[u8; 6]; 4]) -> Gamestate{
+        // let mut num = 1;
+        // Vertical win check 
+        let mut incr = 0;
+        let mut i = 0;
+        loop {
+            if i > 2 {
+                break;
             }
-            // Now do checking
-            loop {
-                println!("{}", temp_col);
-                println!("{}", temp_row);
-                if temp_row < 1 || temp_col > 3 {
-                    break;
-                }
-                if (board[temp_row][temp_col] != 0 && board[temp_row - 1][temp_col + 1] != 0) && (board[temp_row - 1][temp_col + 1] != board[temp_row][temp_col]) {
-                    if incr == 1 {
-                        if board[temp_row][temp_col] == board[temp_row + 1][temp_col - 1] {
-                            incr += 1;
-                        }
-                        else {
-                            incr = 0;
-                            temp_row -= 1;
-                            temp_col += 1;
-                        }
+            if (board[i][column] != 0 && board[i+1][column] !=0) && (board[i][column] != board[i+1][column]) {
+                if incr == 1 {
+                    if board[i][column] == board[i-1][column] {
+                        incr += 1;
+                        i+=2;
                     }
                     else {
-                        incr += 1;
-                        temp_row -= 2;
-                        temp_col += 2;
+                        incr = 0;
+                        i+=1;
                     }
                 }
                 else {
-                    incr = 0;
-                    temp_row -= 1;
-                    temp_col += 1;
+                    incr += 1;
+                    i+=2;
                 }
-                if incr == 2 {
-                    let mut winner = "0";
-                    if (board[temp_row][temp_col] == 2) {
-                        winner = "T";
+                
+            }
+            else {
+                incr = 0;
+                i += 1;
+            }
+            if incr == 2 {
+                i -= 2;
+                let mut winner = "0";
+                if (board[i][column] == 2) {
+                    winner = "T";
+                }
+                else {
+                    winner = "O";
+                }
+                println!("Player {} wins", winner);
+                return Gamestate::Gameover;
+                
+            }
+        }
+        // Horizontal Win Check
+        incr = 0;
+        i = 0;
+        loop {
+            if i > 4 {
+                break;
+            }
+            if (board[row][i] != 0 && board[row][i+1] != 0) && (board[row][i] != board[row][i+1]) {
+                if incr == 1 {
+                    if board[row][i] == board[row][i-1] {
+                        incr += 1;
+                        i+=2;
                     }
                     else {
-                        winner = "O";
+                        incr = 0;
+                        i+=1;
                     }
-                    println!("Player {} wins", winner);
-                    return Gamestate::Gameover;
                 }
+                else {
+                    incr += 1;
+                    i+=2;
+                }
+            }
+            else {
+                incr = 0;
+                i+=1;
+            }
+            if incr == 2 {
+                i -= 2;
+                let mut winner = "0";
+                if (board[row][i] == 2) {
+                    winner = "T";
+                }
+                else {
+                    winner = "O";
+                }
+                println!("Player {} wins", winner);
+                return Gamestate::Gameover;
 
             }
-            println!("No winner");
-            return Gamestate::InProgress;
-        }     
+        }
+        // Diagonal Check
+        let mut temp_row = row;
+        let mut temp_col = column;
+    
+        loop {
+            if temp_row == 3 || temp_col == 0 {
+                break;
+            }  
+            temp_row += 1;
+            temp_col -= 1;
+        }
+        // Now do checking
+        loop {
+            println!("{}", temp_col);
+            println!("{}", temp_row);
+            if temp_row < 1 || temp_col > 3 {
+                break;
+            }
+            if (board[temp_row][temp_col] != 0 && board[temp_row - 1][temp_col + 1] != 0) && (board[temp_row - 1][temp_col + 1] != board[temp_row][temp_col]) {
+                if incr == 1 {
+                    if board[temp_row][temp_col] == board[temp_row + 1][temp_col - 1] {
+                        incr += 1;
+                    }
+                    else {
+                        incr = 0;
+                        temp_row -= 1;
+                        temp_col += 1;
+                    }
+                }
+                else {
+                    incr += 1;
+                    temp_row -= 2;
+                    temp_col += 2;
+                }
+            }
+            else {
+                incr = 0;
+                temp_row -= 1;
+                temp_col += 1;
+            }
+            if incr == 2 {
+                let mut winner = "0";
+                if (board[temp_row][temp_col] == 2) {
+                    winner = "T";
+                }
+                else {
+                    winner = "O";
+                }
+                println!("Player {} wins", winner);
+                return Gamestate::Gameover;
+            }
+
+        }
+        println!("No winner");
+        return Gamestate::InProgress;
+    }     
 
 
     // Check who wins connect 4
@@ -295,6 +328,9 @@ impl Component for GameBoardComponent{
             curr_player : Player::Player1,
             viewmode: ViewMode::Default,
             gamename: GameName::Connect4,
+            username: String::new(),
+            password: String::new(),
+            is_authenticated: false,
         }
     }
 
@@ -302,6 +338,44 @@ impl Component for GameBoardComponent{
     fn update(&mut self , _ctx: &Context<Self>, msg: Self::Message) -> bool {
         let column;
         match msg{
+            Msg::SignIn =>{
+                let mut map = HashMap::new();
+                map.insert("username", self.username);
+                map.insert("password", self.password);
+
+                let client = reqwest::blocking::Client::new();
+                let res = client.post("http://localhost/4000")
+                    .json(&map)
+                    .send();
+                if res.unwrap().status() == StatusCode::OK{
+                    self.is_authenticated = true;
+                }
+                return true;
+            },
+            Msg::SignUp =>{
+                let mut map: HashMap<&str,()>= HashMap::new();
+                map.insert("username", self.username);
+                map.insert("password", self.password);
+                map.insert("wins", 0);
+                map.insert("losses", 0);
+
+                let client = reqwest::blocking::Client::new();
+                let res = client.post("http://localhost/4000")
+                    .json(&map)
+                    .send();
+                if res.unwrap().status() == StatusCode::OK{
+                    self.is_authenticated = true;
+                }
+                return true;
+            },
+            Msg::UsernameInput(uname) =>{
+                self.username = uname;
+                return false;
+            },
+            Msg::PasswordInput(pass)=>{
+                self.password = pass;
+                return false; 
+            },
             Msg::ColumnZero => {
                 column = 0;
                 },
@@ -393,6 +467,7 @@ impl Component for GameBoardComponent{
                         self.gamestate = GameBoardComponent::check_connect4_winner(column, row_num, &self.curr_player, self.conn4_board);
                         match self.gamestate {
                             Gamestate::Gameover => {
+                                //GameBoardComponent::save_game_details();
                                 self.conn4_board = [[0;7]; 6];
                                 self.gamestate = Gamestate::InProgress;
                             },
@@ -1321,6 +1396,14 @@ impl Component for GameBoardComponent{
                         <button onclick = {link.callback(|_| Msg::NormalView)}>{"Normal"}</button>
                         <button onclick = {link.callback(|_| Msg::CBView)}>{"Color Blind"}</button>
                     </div>
+                </div>
+
+                <div class = "login-box">
+                    <h1>{"Sign In / Sign Up"}</h1>
+                    <TextInput on_change = {link.callback(Msg::UsernameInput)} value={self.username.clone()} />
+                    <TextInput on_change ={link.callback(Msg::PasswordInput)} value={self.password.clone()} />
+                    <button onclick = {link.callback(|_| Msg::SignUp)}>{"Sign Up"}</button>
+                    <button onclick = {link.callback(|_| Msg::SignIn)}>{"Sign In"}</button>
                 </div>
             </div>
         }
