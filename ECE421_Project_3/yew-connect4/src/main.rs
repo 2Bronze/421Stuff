@@ -244,6 +244,7 @@ impl GameBoardComponent{
             // Horizontal Win Check
             incr = 0;
             i = 0;
+            let mut second = false;
             loop {
                 if i > 4 {
                     break;
@@ -281,6 +282,12 @@ impl GameBoardComponent{
                     return Gamestate::Gameover;
 
                 }
+                // Go back and check even 
+                if i == 5 && second == false{
+                    incr = 0;
+                    i = 1;
+                    second = true;
+                }
             }
             // Diagonal Check
             incr = 0;
@@ -296,8 +303,6 @@ impl GameBoardComponent{
             }
             // Now do checking
             loop {
-                println!("{}", temp_col);
-                println!("{}", temp_row);
                 if temp_row < 1 || temp_col > 3 {
                     break;
                 }
