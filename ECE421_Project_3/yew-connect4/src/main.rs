@@ -319,6 +319,9 @@ impl GameBoardComponent{
                     }
                     else {
                         incr += 1;
+                        if temp_row == 1 {
+                            break;
+                        }
                         temp_row -= 2;
                         temp_col += 2;
                     }
@@ -372,6 +375,9 @@ impl GameBoardComponent{
                     }
                     else {
                         incr += 1;
+                        if temp_row2 == 1 {
+                            break;
+                        }
                         temp_row2 -= 2;
                         temp_col2 -= 2;
                     }
