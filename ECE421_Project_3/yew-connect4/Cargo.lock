@@ -851,17 +851,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "reqwest"
-version = "0.11.10"
+name = "reqwest-wasm"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46a1f7aa4f35e5e8b4160449f51afc758f0ce6454315a9fa7d0d113e958c41eb"
+checksum = "f95c6f51c387d62928baa7c144f1e58a318ee8297c632ae224a9ba4ff9b39e12"
 dependencies = [
  "base64",
  "bytes 1.1.0",
  "encoding_rs",
+ "futures",
  "futures-core",
  "futures-util",
- "h2",
  "http 0.2.6",
  "http-body",
  "hyper",
@@ -1441,9 +1441,9 @@ checksum = "d19538ccc21819d01deaf88d6a17eae6596a12e9aafdbb97916fb49896d89de9"
 
 [[package]]
 name = "winreg"
-version = "0.10.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
+checksum = "0120db82e8a1e0b9fb3345a539c478767c0048d842860994d96113d5b667bd69"
 dependencies = [
  "winapi",
 ]
@@ -1473,7 +1473,7 @@ version = "0.1.0"
 dependencies = [
  "futures",
  "http 0.1.21",
- "reqwest",
+ "reqwest-wasm",
  "serde",
  "serde_json",
  "tokio",

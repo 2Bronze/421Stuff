@@ -6,7 +6,7 @@ use wasm_request::{get_options, request, Method, DataType};
 
 use std::collections::HashMap;
 use std::error::Error;
-use reqwest;
+use reqwest_wasm;
 use http::StatusCode;
 
 
@@ -311,9 +311,7 @@ impl GameBoardComponent{
         .await;
         if res.unwrap().status().as_str() == "200"{
             self.is_authenticated = true;
-        }
-                
-            
+        }          
         }
     
 }
@@ -343,10 +341,10 @@ impl Component for GameBoardComponent{
         let column;
         match msg{
             Msg::SignIn =>{
-                let mut map = HashMap::new();
-                map.insert("username", self.username.clone());
-                map.insert("password", self.password.clone());
-                self.login_user(map);
+                //let mut map = HashMap::new();
+                //map.insert("username", self.username.clone());
+                //map.insert("password", self.password.clone());
+                //self.login_user(map);
                 return true;
             },
             Msg::SignUp =>{
