@@ -1,4 +1,3 @@
-// External imports
 use actix_cors::Cors;
 use actix_web::{http, middleware, App, HttpServer};
 use dotenv::dotenv;
@@ -10,19 +9,19 @@ use api_service::ApiService;
 mod api_router;
 mod api_service;
 
-// Api Service constructor
+// Api Service Constructor
 pub struct ServiceManager {
     api: ApiService,
 }
 
-// Api Servie Implementation
+// Api Service Implementation
 impl ServiceManager {
     pub fn new(api: ApiService) -> Self {
         ServiceManager { api }
     }
 }
 
-// Service Manager constructor
+// Service Manager Constructor
 pub struct AppState {
     service_manager: ServiceManager,
 }
@@ -36,26 +35,23 @@ async fn main() -> std::io::Result<()> {
     env::set_var("RUST_LOG", "actix_web=debug,actix_server=info");
     env_logger::init();
 
-    // Parse a connection string into an options struct.
+    // set databse url
     let database_url = "mongodb://localhost:27017";
     let client_options = ClientOptions::parse(&database_url).unwrap();
 
-    // Get the reference to Mongo DB
+    // get reference of mongodb
     let client = Client::with_options(client_options).unwrap();
 
-    // get the reference to the Data Base
-    // let database_name = env::var("DATABASE_NAME").expect("DATABASE NAME is not in .env file");
+    // get the reference to the database
     let db = client.database("main");
 
     // get the reference to the Collection
-    // let user_collection_name = env::var("USER_COLLECTION_NAME").expect("COLLECTION NAME is not in .env file");
     let user_collection = db.collection("users");
     let match_collection = db.collection("match_history");
 
-    // Gte the server URL
     let server_url = "localhost:4000";
 
-    // Start the server
+    // start the rest server
     HttpServer::new(move || {
         let user_service_worker = ApiService::new(user_collection.clone(), match_collection.clone());
         let service_manager = ServiceManager::new(user_service_worker);
@@ -68,7 +64,7 @@ async fn main() -> std::io::Result<()> {
             .max_age(3600)
             .finish();
 
-        // Init http server
+        // init http server
         App::new()
             .wrap(cors_middleware)
             .wrap(middleware::Logger::default())

@@ -9,7 +9,7 @@ use chrono::serde::ts_seconds;
 extern crate serde;
 extern crate serde_json;
 
-// Estructure data for DB
+// User Model
 #[derive(Serialize, Deserialize, Debug)]
 pub struct User {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
@@ -20,7 +20,7 @@ pub struct User {
     pub losses: i32,
 }
 
-
+// Match Model
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Match {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
@@ -39,6 +39,7 @@ pub struct ApiService {
     match_history: Collection,
 }
 
+// User to document
 fn user_to_document(user: &User) -> Document {
     let User {
         username,
@@ -55,7 +56,7 @@ fn user_to_document(user: &User) -> Document {
     }
 }
 
-// Transform data to mongo db document
+// Match to document
 fn match_to_document(match_data: &Match) -> Document {
     let Match {
         winner,
@@ -71,21 +72,24 @@ fn match_to_document(match_data: &Match) -> Document {
     }
 }
 
-// Functions with quieries to Mongo
+// Functions with queries to Mongo
 impl ApiService {
+    //Constructor, user collection and match collection
     pub fn new(users: Collection, match_history: Collection) -> ApiService {
         ApiService { users, match_history }
     }
 
-    // Insert data to Mongo DB
+    // Insert new User
     pub fn create_user(&self, _user: &User) -> Result<InsertOneResult, Error> {
         self.users.insert_one(user_to_document(_user), None)
     }
 
+    // Insert new Match
     pub fn create_match(&self, _match: &Match) -> Result<InsertOneResult, Error> {
         self.match_history.insert_one(match_to_document(_match), None)
     }
 
+    // Get user based on username
     pub fn get_user(&self, username: &String) -> Result<Option<bson::ordered::OrderedDocument>, mongodb::error::Error> {
         let document = self.users.find_one(doc! {
             "username": username,
@@ -93,6 +97,7 @@ impl ApiService {
         Ok(document)
     }
 
+    // Get matches based on username
     pub fn get_matches(&self, username: &String) -> Result<Vec<bson::ordered::OrderedDocument>, mongodb::error::Error> {
         let cursor = self.match_history.find(doc! {
             "$or": [
@@ -104,53 +109,32 @@ impl ApiService {
         Ok(docs)
     }
 
+    // Update user based on username
     pub fn update_user(&self, _user: &User, _username: &String) -> Result<UpdateResult, Error> {
         self.users.update_one(doc! {"username": _username}, user_to_document(_user), None)
     }
 
+    // Delete user
     pub fn delete_user(&self, _user: &User) -> Result<DeleteResult, Error> {
         self.users.delete_one(doc! { "username": _user.username.to_owned() }, None)
     }
 
+    // Get all matches
     pub fn get_all_matches(&self) -> Result<Vec<bson::ordered::OrderedDocument>, mongodb::error::Error> {
         let cursor = self.match_history.find(doc! {}, None).ok().expect("Failed to execute find!");
         let docs: Vec<_> = cursor.map(|doc| doc.unwrap()).collect();
         Ok(docs)
     }
 
+    // Update a match based on id
     pub fn update_match(&self, _match_data: &Match, _id: &String) -> Result<UpdateResult, Error>{
         let match_id = bson::oid::ObjectId::with_string(_id).unwrap();
         self.match_history.update_one(doc! {"_id": match_id}, match_to_document(_match_data), None)
     }
 
+    // Delete a match based on id
     pub fn delete_match(&self, _id: &String) -> Result<DeleteResult, Error> {
         let match_id = bson::oid::ObjectId::with_string(_id).unwrap();
         self.match_history.delete_one(doc! {"_id": match_id}, None)
     }
-
-    // Update an existing document
-    // pub fn update(&self, _data:&Data, _param: &String) -> Result<UpdateResult, Error> {
-    //     let object_param = bson::oid::ObjectId::with_string(_param).unwrap();
-    //     self.collection.update_one(doc! { "_id": object_param }, data_to_document(_data), None)
-    // }
-    //
-    // // Delete some document
-    // pub fn delete(&self, _title: &String) -> Result<DeleteResult, Error> {
-    //     self.collection.delete_one(doc! { "title": _title }, None)
-    // }
-    //
-    // // Get all documents
-    // pub fn get_json(&self) -> std::result::Result<std::vec::Vec<bson::ordered::OrderedDocument>, mongodb::error::Error> {
-    //     let cursor = self.collection.find(None, None).ok().expect("Failed to execute find.");
-    //     let docs: Vec<_> = cursor.map(|doc| doc.unwrap()).collect();
-    //     Ok(docs)
-    // }
-    //
-    // // Get documents with quiery
-    // pub fn get_by(&self, param: &String) -> std::result::Result<std::vec::Vec<bson::ordered::OrderedDocument>, mongodb::error::Error> {
-    //     let cursor = self.collection.find(doc! { "author": { "$regex": param } }, None).ok().expect("Failed to execute find.");
-    //     let docs: Vec<_> = cursor.map(|doc| doc.unwrap()).collect();
-    //     let _serialized = serde_json::to_string(&docs).unwrap();
-    //     Ok(docs)
-    // }
 }
