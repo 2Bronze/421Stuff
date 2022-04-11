@@ -65,7 +65,7 @@ impl GameBoardComponent{
         let mut return_col = rng.gen_range(0..7);
         //check if col is full
         loop {
-            if board[5][return_col as usize] == 0 {
+            if board[0][return_col as usize] == 0 {
                 break;
             }
             return_col = rng.gen_range(0..7);
@@ -78,7 +78,7 @@ impl GameBoardComponent{
         let mut return_col = rng.gen_range(0..6);
         //check if col is full
         loop {
-            if board[3][return_col as usize] == 0 {
+            if board[0][return_col as usize] == 0 {
                 break;
             }
             return_col = rng.gen_range(0..6);
@@ -88,7 +88,7 @@ impl GameBoardComponent{
     
     fn hard_bot_connect4(board: [[u8; 7]; 6]) -> u8 {
         let mut return_col = 255;
-        for j in 0..6 {
+        for j in (0..6).rev() {
             for i in 0..7 {
                 //Check for block/win
                 for player in 1..3 {
@@ -107,22 +107,22 @@ impl GameBoardComponent{
                         }
     
                         //check vertical (up)
-                        if j <= 2 {
-                            if board[j+1][i] == player && board[j+2][i] == player && board[j+3][i] == 0 {
+                        if j > 2 {
+                            if board[j-1][i] == player && board[j-2][i] == player && board[j-3][i] == 0 {
                                 return_col = i as u8;
                             }
                         }
     
     
                         //check diagonal (up right/ up left)
-                        if i <= 3 && j <= 2 {
-                            if board[j+1][i+1] == player && board[j+2][i+2] == player && board[j+3][i+3] == 0 {
+                        if i <= 3 && j > 2 {
+                            if board[j-1][i+1] == player && board[j-2][i+2] == player && board[j-3][i+3] == 0 {
                                 return_col = i as u8 + 3;
                             }
                         }
     
-                        if i >= 3 && j <= 2 {
-                            if board[j+1][i-1] == player && board[j+2][i-2] == player && board[j+3][i-3] == 0 {
+                        if i >= 3 && j > 2 {
+                            if board[j-1][i-1] == player && board[j-2][i-2] == player && board[j-3][i-3] == 0 {
                                 return_col = i as u8 - 3;
                             }
                         }
@@ -148,7 +148,7 @@ impl GameBoardComponent{
     
     fn hard_bot_toototto(board: [[u8; 6]; 4]) -> u8 { // T = 1, O == 2, Bot is OTTO player
         let mut return_col = 255;
-        for j in 0..4 {
+        for j in (0..4).rev() {
             for i in 0..6 {
                 //look for block/win
                 for player in 1..3 {
@@ -167,21 +167,21 @@ impl GameBoardComponent{
                         }
     
                         //check vertical (up)
-                        if j == 0 {
-                            if board[j+1][i] == board[j+2][i] && board[j+1][i] == player && board[j+3][i] == 0 {
+                        if j == 3 {
+                            if board[j-1][i] == board[j-2][i] && board[j-1][i] == player && board[j-3][i] == 0 {
                                 return_col = i as u8;
                             }
                         }
     
                         //check diagonal (up right/ up left)
-                        if i <= 2 && j == 0 {
-                            if board[j+1][i+1] == board[j+2][i+2] && board[j+1][i+1] == player && board[j+3][i+3] == 0 {
+                        if i <= 2 && j == 3 {
+                            if board[j-1][i+1] == board[j-2][i+2] && board[j-1][i+1] == player && board[j-3][i+3] == 0 {
                                 return_col = i as u8 + 3;
                             }
                         }
     
-                        if i >= 3 && j == 0 {
-                            if board[j+1][i-1] == board[j+2][i-2] && board[j+1][i-1] == player && board[j+3][i-3] == 0 {
+                        if i >= 3 && j == 3 {
+                            if board[j-1][i-1] == board[j-2][i-2] && board[j-1][i-1] == player && board[j-3][i-3] == 0 {
                                 return_col = i as u8 - 3;
                             }
                         }
@@ -197,7 +197,20 @@ impl GameBoardComponent{
     }
 
         // Check who wins toot otto
-        pub fn check_toototto_winner(column: usize, row: usize, player: &Player, board: [[u8; 6]; 4]) -> Gamestate{
+        pub fn check_toototto_winner(column: usize, row: usize, _player: &Player, board: [[u8; 6]; 4]) -> Gamestate{
+            //Check for full board
+            let mut full = true;
+            for i in 0..6{
+                for j in 0..4{
+                    if board[j][i] == 0{
+                        full = false
+                    }
+                }
+            }
+            if full{
+                return Gamestate::Gameover;
+            }
+
             // let mut num = 1;
             // Vertical win check 
             let mut incr = 0;
@@ -229,8 +242,8 @@ impl GameBoardComponent{
                 }
                 if incr == 2 {
                     i -= 2;
-                    let mut winner = "0";
-                    if (board[i][column] == 2) {
+                    let winner;
+                    if board[i][column] == 2 {
                         winner = "T";
                     }
                     else {
@@ -271,8 +284,8 @@ impl GameBoardComponent{
                 }
                 if incr == 2 {
                     i -= 2;
-                    let mut winner = "0";
-                    if (board[row][i] == 2) {
+                    let winner;
+                    if board[row][i] == 2 {
                         winner = "T";
                     }
                     else {
@@ -332,8 +345,8 @@ impl GameBoardComponent{
                     temp_col += 1;
                 }
                 if incr == 2 {
-                    let mut winner = "0";
-                    if (board[temp_row][temp_col] == 2) {
+                    let winner;
+                    if board[temp_row][temp_col] == 2 {
                         winner = "T";
                     }
                     else {
@@ -388,8 +401,8 @@ impl GameBoardComponent{
                     temp_col2 -= 1;
                 }
                 if incr == 2 {
-                    let mut winner = "0";
-                    if (board[temp_row2][temp_col2] == 2) {
+                    let winner;
+                    if board[temp_row2][temp_col2] == 2 {
                         winner = "T";
                     }
                     else {
@@ -407,6 +420,18 @@ impl GameBoardComponent{
 
     // Check who wins connect 4
     pub fn check_connect4_winner(column: usize, row: usize, player: &Player, board: [[u8; 7]; 6]) -> Gamestate{
+        //Check for full board
+        let mut full = true;
+        for i in 0..7{
+            for j in 0..6{
+                if board[j][i] == 0{
+                    full = false
+                }
+            }
+        }
+        if full{
+            return Gamestate::Gameover;
+        }
         let num: u8;
         match player {
             Player::Player1 => num = 1,
