@@ -161,7 +161,7 @@ impl GameBoardComponent{
                         }
     
                         if i >= 3 {
-                            if board[j][i-1] == board[j][i-2] && board[j][i+1] == player && board[j][i-3] == 0 {
+                            if board[j][i-1] == board[j][i-2] && board[j][i-1] == player && board[j][i-3] == 0 {
                                 return_col = i as u8 - 3;
                             }
                         }
