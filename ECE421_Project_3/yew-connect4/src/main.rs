@@ -1,5 +1,6 @@
 use yew::prelude::*;
 use yew::html::Scope;
+use rand::prelude::*;
 
 
 // Enumeration for keeping track of gamestate
@@ -59,6 +60,141 @@ struct GameBoardComponent{
 }
 
 impl GameBoardComponent{
+    fn easy_bot_connect4(board: [[u8; 7]; 6]) -> u8 {
+        let mut rng = thread_rng();
+        let mut return_col = rng.gen_range(0..7);
+        //check if col is full
+        loop {
+            if board[5][return_col as usize] == 0 {
+                break;
+            }
+            return_col = rng.gen_range(0..7);
+        }
+        return_col
+    }
+    
+    fn easy_bot_toototto(board: [[u8; 6]; 4]) -> u8 {
+        let mut rng = thread_rng();
+        let mut return_col = rng.gen_range(0..6);
+        //check if col is full
+        loop {
+            if board[3][return_col as usize] == 0 {
+                break;
+            }
+            return_col = rng.gen_range(0..6);
+        }
+        return_col
+    }
+    
+    fn hard_bot_connect4(board: [[u8; 7]; 6]) -> u8 {
+        let mut return_col = 255;
+        for j in 0..6 {
+            for i in 0..7 {
+                //Check for block/win
+                for player in 1..3 {
+                    if board[j][i] == player {
+                        //check horizontal (right / left)
+                        if i <= 3  {
+                            if board[j][i+1] == player && board[j][i+2] == player && board[j][i+3] == 0 {
+                                return_col = i as u8 + 3;
+                            }
+                        }
+    
+                        if i >= 3 {
+                            if board[j][i-1] == player && board[j][i-2] == player && board[j][i-3] == 0 {
+                                return_col = i as u8 - 3;
+                            }
+                        }
+    
+                        //check vertical (up)
+                        if j <= 2 {
+                            if board[j+1][i] == player && board[j+2][i] == player && board[j+3][i] == 0 {
+                                return_col = i as u8;
+                            }
+                        }
+    
+    
+                        //check diagonal (up right/ up left)
+                        if i <= 3 && j <= 2 {
+                            if board[j+1][i+1] == player && board[j+2][i+2] == player && board[j+3][i+3] == 0 {
+                                return_col = i as u8 + 3;
+                            }
+                        }
+    
+                        if i >= 3 && j <= 2 {
+                            if board[j+1][i-1] == player && board[j+2][i-2] == player && board[j+3][i-3] == 0 {
+                                return_col = i as u8 - 3;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        //No possible block or win found
+        if return_col > 7 {
+            return_col = GameBoardComponent::easy_bot_connect4(board);
+        }
+    
+        // //check if column is full
+        // loop {
+        //     if board[5][return_col as usize] == 0 {
+        //         break;
+        //     }
+        //     return_col = easy_bot_connect4();
+        // }
+        return_col
+    }
+    
+    fn hard_bot_toototto(board: [[u8; 6]; 4]) -> u8 { // T = 1, O == 2, Bot is OTTO player
+        let mut return_col = 255;
+        for j in 0..4 {
+            for i in 0..6 {
+                //look for block/win
+                for player in 1..3 {
+                    if board[j][i] != 0 {
+                        //check horizontal (right / left)
+                        if i <= 2 {
+                            if board[j][i+1] == board[j][i+2] && board[j][i+1] == player && board[j][i+3] == 0 {
+                                return_col = i as u8 + 3;
+                            }
+                        }
+    
+                        if i >= 3 {
+                            if board[j][i-1] == board[j][i-2] && board[j][i+1] == player && board[j][i-3] == 0 {
+                                return_col = i as u8 - 3;
+                            }
+                        }
+    
+                        //check vertical (up)
+                        if j == 0 {
+                            if board[j+1][i] == board[j+2][i] && board[j+1][i] == player && board[j+3][i] == 0 {
+                                return_col = i as u8;
+                            }
+                        }
+    
+                        //check diagonal (up right/ up left)
+                        if i <= 2 && j == 0 {
+                            if board[j+1][i+1] == board[j+2][i+2] && board[j+1][i+1] == player && board[j+3][i+3] == 0 {
+                                return_col = i as u8 + 3;
+                            }
+                        }
+    
+                        if i >= 3 && j == 0 {
+                            if board[j+1][i-1] == board[j+2][i-2] && board[j+1][i-1] == player && board[j+3][i-3] == 0 {
+                                return_col = i as u8 - 3;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //No possible block or win found
+        if return_col > 7 {
+            return_col = GameBoardComponent::easy_bot_toototto(board);
+        }
+        return_col
+    }
 
         // Check who wins toot otto
         pub fn check_toototto_winner(column: usize, row: usize, player: &Player, board: [[u8; 6]; 4]) -> Gamestate{
@@ -108,6 +244,7 @@ impl GameBoardComponent{
             // Horizontal Win Check
             incr = 0;
             i = 0;
+            let mut second = false;
             loop {
                 if i > 4 {
                     break;
@@ -145,6 +282,12 @@ impl GameBoardComponent{
                     return Gamestate::Gameover;
 
                 }
+                // Go back and check even 
+                if i == 5 && second == false{
+                    incr = 0;
+                    i = 1;
+                    second = true;
+                }
             }
             // Diagonal Check
             incr = 0;
@@ -160,8 +303,6 @@ impl GameBoardComponent{
             }
             // Now do checking
             loop {
-                println!("{}", temp_col);
-                println!("{}", temp_row);
                 if temp_row < 1 || temp_col > 3 {
                     break;
                 }
@@ -178,6 +319,9 @@ impl GameBoardComponent{
                     }
                     else {
                         incr += 1;
+                        if temp_row == 1 {
+                            break;
+                        }
                         temp_row -= 2;
                         temp_col += 2;
                     }
@@ -231,6 +375,9 @@ impl GameBoardComponent{
                     }
                     else {
                         incr += 1;
+                        if temp_row2 == 1 {
+                            break;
+                        }
                         temp_row2 -= 2;
                         temp_col2 -= 2;
                     }
@@ -416,6 +563,7 @@ impl Component for GameBoardComponent{
                 self.gametype = Gametype::Human;
                 self.conn4_board = [[0;7]; 6];
                 self.toototto_board = [[0;6]; 4];
+                self.curr_player = Player::Player1;
                 return true
                 },
             Msg::EasyCPU => {
@@ -423,6 +571,7 @@ impl Component for GameBoardComponent{
                 self.gametype = Gametype::ComputerEasy;
                 self.conn4_board = [[0;7]; 6];
                 self.toototto_board = [[0;6]; 4];
+                self.curr_player = Player::Player1;
                 return true
                 },
             Msg::HardCPU => {
@@ -430,6 +579,7 @@ impl Component for GameBoardComponent{
                 self.gametype = Gametype::ComputerHard;
                 self.conn4_board = [[0;7]; 6];
                 self.toototto_board = [[0;6]; 4];
+                self.curr_player = Player::Player1;
                 return true
                 },
             Msg::Connect4 => {
@@ -437,6 +587,7 @@ impl Component for GameBoardComponent{
                 self.gamename = GameName::Connect4;
                 self.conn4_board = [[0;7]; 6];
                 self.toototto_board = [[0;6]; 4];
+                self.curr_player = Player::Player1;
                 return true
                 }, 
             Msg::TootOtto => {
@@ -444,6 +595,7 @@ impl Component for GameBoardComponent{
                 self.gamename = GameName::TOOTOTTO;
                 self.conn4_board = [[0;7]; 6];
                 self.toototto_board = [[0;6]; 4];
+                self.curr_player = Player::Player1;
                 return true
                 },
             Msg::NormalView => {
@@ -485,7 +637,49 @@ impl Component for GameBoardComponent{
                                 self.gamestate = Gamestate::InProgress;
                             },
                             Gamestate::InProgress => {
-                                self.curr_player = Player::Player2;
+                                match self.gametype {
+                                    Gametype::ComputerEasy =>{
+                                        let cpu_col = usize::from(GameBoardComponent::easy_bot_connect4(self.conn4_board));
+                                        let mut cpu_row = 5;
+                                        for _ in 0..5 {
+                                            if self.conn4_board[cpu_row][cpu_col] == 0 {
+                                                break;
+                                            }
+                                            else {
+                                                cpu_row -= 1;
+                                            }
+                                        }
+                                        self.conn4_board[cpu_row][cpu_col] = 2;
+                                        self.gamestate = GameBoardComponent::check_connect4_winner(column, cpu_row, &self.curr_player, self.conn4_board);
+                                        if matches!(self.gamestate, Gamestate::Gameover){
+                                            self.conn4_board = [[0;7]; 6];
+                                            self.gamestate = Gamestate::InProgress;
+                                            self.curr_player = Player::Player1;
+                                        }
+                                    },
+                                    Gametype::ComputerHard =>{
+                                        let cpu_col = usize::from(GameBoardComponent::hard_bot_connect4(self.conn4_board));
+                                        let mut cpu_row = 5;
+                                        for _ in 0..5 {
+                                            if self.conn4_board[cpu_row][cpu_col] == 0 {
+                                                break;
+                                            }
+                                            else {
+                                                cpu_row -= 1;
+                                            }
+                                        }
+                                        self.conn4_board[cpu_row][cpu_col] = 2;
+                                        self.gamestate = GameBoardComponent::check_connect4_winner(column, cpu_row, &self.curr_player, self.conn4_board);
+                                        if matches!(self.gamestate, Gamestate::Gameover){
+                                            self.conn4_board = [[0;7]; 6];
+                                            self.gamestate = Gamestate::InProgress;
+                                            self.curr_player = Player::Player1;
+                                        }
+                                    },
+                                    Gametype::Human =>{
+                                        self.curr_player = Player::Player2;
+                                    }
+                                }
                             }
                         }
                     },
@@ -532,7 +726,49 @@ impl Component for GameBoardComponent{
                                 self.gamestate = Gamestate::InProgress;
                             },
                             Gamestate::InProgress => {
-                                self.curr_player = Player::Player2;
+                                match self.gametype {
+                                    Gametype::ComputerEasy =>{
+                                        let cpu_col = usize::from(GameBoardComponent::easy_bot_toototto(self.toototto_board));
+                                        let mut cpu_row = 3;
+                                        for _ in 0..3 {
+                                            if self.toototto_board[cpu_row][cpu_col] == 0 {
+                                                break;
+                                            }
+                                            else {
+                                                cpu_row -= 1;
+                                            }
+                                        }
+                                        self.toototto_board[cpu_row][cpu_col] = 2;
+                                        self.gamestate = GameBoardComponent::check_toototto_winner(column, cpu_row, &self.curr_player, self.toototto_board);
+                                        if matches!(self.gamestate, Gamestate::Gameover){
+                                            self.toototto_board = [[0;6]; 4];
+                                            self.gamestate = Gamestate::InProgress;
+                                            self.curr_player = Player::Player1;
+                                        }
+                                    },
+                                    Gametype::ComputerHard =>{
+                                        let cpu_col = usize::from(GameBoardComponent::hard_bot_toototto(self.toototto_board));
+                                        let mut cpu_row = 3;
+                                        for _ in 0..3 {
+                                            if self.toototto_board[cpu_row][cpu_col] == 0 {
+                                                break;
+                                            }
+                                            else {
+                                                cpu_row -= 1;
+                                            }
+                                        }
+                                        self.toototto_board[cpu_row][cpu_col] = 2;
+                                        self.gamestate = GameBoardComponent::check_toototto_winner(column, cpu_row, &self.curr_player, self.toototto_board);
+                                        if matches!(self.gamestate, Gamestate::Gameover){
+                                            self.toototto_board = [[0;6]; 4];
+                                            self.gamestate = Gamestate::InProgress;
+                                            self.curr_player = Player::Player1;
+                                        }
+                                    },
+                                    Gametype::Human =>{
+                                        self.curr_player = Player::Player2;
+                                    }
+                                }
                             }
                         }
                     },
